@@ -21,10 +21,13 @@ const slides = document.querySelectorAll('.slide');
 const dots = document.querySelectorAll('.dot');
 const prevBtn = document.querySelector('.slider-btn.prev');
 const nextBtn = document.querySelector('.slider-btn.next');
+const slider = document.querySelector('.showroom-slider');
 
 if (slides.length) {
   let current = 0;
   let timer;
+  let touchStartX = 0;
+  let touchEndX = 0;
 
   function showSlide(index) {
     current = (index + slides.length) % slides.length;
@@ -47,6 +50,10 @@ if (slides.length) {
     timer = setInterval(() => showSlide(current + 1), 4500);
   }
 
+  function stopSlider() {
+    clearInterval(timer);
+  }
+
   prevBtn?.addEventListener('click', () => {
     showSlide(current - 1);
     startSlider();
@@ -63,6 +70,25 @@ if (slides.length) {
       startSlider();
     });
   });
+
+  slider?.addEventListener('mouseenter', stopSlider);
+  slider?.addEventListener('mouseleave', startSlider);
+  slider?.addEventListener('focusin', stopSlider);
+  slider?.addEventListener('focusout', startSlider);
+
+  slider?.addEventListener('touchstart', (event) => {
+    touchStartX = event.changedTouches[0].screenX;
+    stopSlider();
+  }, { passive: true });
+
+  slider?.addEventListener('touchend', (event) => {
+    touchEndX = event.changedTouches[0].screenX;
+    const distance = touchEndX - touchStartX;
+    if (Math.abs(distance) > 45) {
+      showSlide(distance < 0 ? current + 1 : current - 1);
+    }
+    startSlider();
+  }, { passive: true });
 
   showSlide(0);
   startSlider();
